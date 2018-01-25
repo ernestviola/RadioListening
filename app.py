@@ -1,34 +1,42 @@
-import sys, os
-from pocketsphinx import *
-from sphinxbase import *
-import pyaudio
+#!/usr/bin/env python3
 
-modeldir = "../../../model"
-datadir = "../../../test/data"
+# NOTE: this example requires PyAudio because it uses the Microphone class
 
-# Create a decoder with certain model
-config = Decoder.default_config()
-config.set_string('-hmm', os.path.join(modeldir, 'en-us/en-us'))
-config.set_string('-dict', os.path.join(modeldir, 'en-us/cmudict-en-us.dict'))
-config.set_string('-keyphrase', 'forward')
-config.set_float('-kws_threshold', 1e+20)
+import time
+
+import speech_recognition as sr
 
 
-p = pyaudio.PyAudio()
-stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=1024)
-stream.start_stream()
+# this is called from the background thread
+def callback(recognizer, audio):
+    # received audio data, now we'll recognize it using Google Speech Recognition
+    try:
+        # for testing purposes, we're just using the default API key
+        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
+        # instead of `r.recognize_google(audio)`
+        print("Google Speech Recognition thinks you said " + recognizer.recognize_google(audio))
+    except sr.UnknownValueError:
+        print("Google Speech Recognition could not understand audio")
+    except sr.RequestError as e:
+        print("Could not request results from Google Speech Recognition service; {0}".format(e))
 
-# Process audio chunk by chunk. On keyword detected perform action and restart search
-decoder = Decoder(config)
-decoder.start_utt()
-while True:
-    buf = stream.read(1024)
-    if buf:
-         decoder.process_raw(buf, False, False)
-    else:
-         break
-    if decoder.hyp() != None:
-        print ([(seg.word, seg.prob, seg.start_frame, seg.end_frame) for seg in decoder.seg()])
-        print ("Detected keyword, restarting search")
-        decoder.end_utt()
-        decoder.start_utt()
+
+r = sr.Recognizer()
+m = sr.Microphone()
+with m as source:
+    r.adjust_for_ambient_noise(source)  # we only need to calibrate once, before we start listening
+
+# start listening in the background (note that we don't have to do this inside a `with` statement)
+stop_listening = r.listen_in_background(m, callback)
+# `stop_listening` is now a function that, when called, stops background listening
+
+# do some unrelated computations for 5 seconds
+for _ in range(50): time.sleep(0.1)  # we're still listening even though the main thread is doing other things
+
+# calling this function requests that the background listener stop listening
+stop_listening(wait_for_stop=False)
+
+# do some more unrelated things
+while True: time.sleep(0.1)  # we're not listening anymore, even though the background thread might still be running for a second or two while cleaning up and stopping
+
+print("We're done here")
