@@ -3,44 +3,106 @@
 # NOTE: this example requires PyAudio because it uses the Microphone class
 
 import time
-
 import speech_recognition as sr
+import threading
+
+def listen(r,m,audio):
+    while listenTrue:
+        sem.acquire()
+        start_time = time.time()
+        with m as source:
+            audio = r.listen(source, phrase_time_limit = 7)
+        sem.release()
+        sem2.acquire()
+        try:
+            f = open('output.txt','a+')
+            f.write(' ' + r.recognize_google(audio))
+            f.close
+        except sr.UnknownValueError:
+            pass
+        sem2.release()
+
+def analyzer():
+    print("Starting analysis")
+    while True:
+        text = ''
+        start_time = time.time()
+        for _ in range(60): time.sleep(0.1)
+        sem2.acquire()
+        f = open("output.txt", "r+")
+        text = f.read()
+        f.seek(0)
+        f.truncate()
+        f.close()
+        sem2.release()
+        print("Analyzing...")
+        print(text)
+        for word in stopWords:
+            if word in text:
+                print("You found a vampire")
+                for _ in range(240): time.sleep(0.1)
+                sem2.acquire()
+                f = open("output.txt", "r+")
+                text += f.read()
+                f.seek(0)
+                f.truncate()
+                f.close()
+                sem2.release()
+                print(text)
+                text = ''
+                print("How long it took to form the message from hearing the keyword: ", time.time()-start_time)
+
+def main():
+
+    global f
+    global listenTrue
+    global sem
+    global sem2
+    global stopWords
+    stopWords = ["vampire","vampires"]
+    listenTrue = True
+    sem = threading.Semaphore(value=1)
+    sem2 = threading.Semaphore(value=1)
+
+    f = open('output.txt','w+')
+    f.truncate()
+    f.close()
+
+    threads = []
+
+    r = sr.Recognizer()
+    output1 = ''
+    r2 = sr.Recognizer()
+    output2 = ''
+    r3 = sr.Recognizer()
+    output3 = ''
+    r4 = sr.Recognizer()
+    output4 = ''
+    r5 = sr.Recognizer()
+    output5 = ''
+    m = sr.Microphone()
+
+    with m as source:
+        r.adjust_for_ambient_noise(source)  # we only need to calibrate once, before we start listening
+
+    t = threading.Thread(target=listen,args=(r,m,output1)).start()
+    threads.append(t)
+    t = threading.Thread(target=listen,args=(r2,m,output2)).start()
+    threads.append(t)
+    t = threading.Thread(target=listen,args=(r3,m,output3)).start()
+    threads.append(t)
+    t = threading.Thread(target=listen,args=(r4,m,output4)).start()
+    threads.append(t)
+    t = threading.Thread(target=listen,args=(r5,m,output5)).start()
+    threads.append(t)
+
+    t = threading.Thread(target=analyzer).start()
+
+    if input() is "exit":
+        listenTrue = False
+        print("Waiting for the last listener")
+        sys.exit()
 
 
-# this is called from the background thread
-def callback(recognizer, audio):
-    # received audio data, now we'll recognize it using Google Speech Recognition
-    try:
-        # for testing purposes, we're just using the default API key
-        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
-        # instead of `r.recognize_google(audio)`
-        print("Google Speech Recognition thinks you said " + recognizer.recognize_google(audio))
-    except sr.UnknownValueError:
-        print("Google Speech Recognition could not understand audio")
-    except sr.RequestError as e:
-        print("Could not request results from Google Speech Recognition service; {0}".format(e))
-
-
-# start listening in the background (note that we don't have to do this inside a `with` statement)
-stop_listening = r.listen_in_background(m, callback)
-# `stop_listening` is now a function that, when called, stops background listening
-
-# do some unrelated computations for 5 seconds
-for _ in range(50): time.sleep(0.1)  # we're still listening even though the main thread is doing other things
-
-# calling this function requests that the background listener stop listening
-stop_listening(wait_for_stop=False)
-
-# do some more unrelated things
-while True: time.sleep(0.1)  # we're not listening anymore, even though the background thread might still be running for a second or two while cleaning up and stopping
-
-if __name__ == '__main__'
-
-r = sr.Recognizer()
-m = sr.Microphone()
-
-for x in range in (0,3):
-    
-
-with m as source:
-    r.adjust_for_ambient_noise(source)  # we only need to calibrate once, before we start listening
+if __name__ == '__main__':
+   main()
