@@ -25,7 +25,6 @@ def listen(r,m,audio):
 def analyzer():
     print("Starting analysis")
     while True:
-        text = ''
         start_time = time.time()
         for _ in range(60): time.sleep(0.1)
         sem2.acquire()
@@ -37,8 +36,9 @@ def analyzer():
         sem2.release()
         print("Analyzing...")
         print(text)
+        text = text.lower()
         for word in stopWords:
-            if word in text:
+            if word in text.lower():
                 print("You found a vampire")
                 for _ in range(240): time.sleep(0.1)
                 sem2.acquire()
@@ -49,7 +49,7 @@ def analyzer():
                 f.close()
                 sem2.release()
                 print(text)
-                text = ''
+                text = ""
                 print("How long it took to form the message from hearing the keyword: ", time.time()-start_time)
 
 def main():
@@ -80,20 +80,24 @@ def main():
     output4 = ''
     r5 = sr.Recognizer()
     output5 = ''
+    r6 = sr.Recognizer()
+    output6 = ''
     m = sr.Microphone()
 
     with m as source:
         r.adjust_for_ambient_noise(source)  # we only need to calibrate once, before we start listening
 
-    t = threading.Thread(target=listen,args=(r,m,output1)).start()
+    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output1)).start()
     threads.append(t)
-    t = threading.Thread(target=listen,args=(r2,m,output2)).start()
+    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output2)).start()
     threads.append(t)
-    t = threading.Thread(target=listen,args=(r3,m,output3)).start()
+    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output3)).start()
     threads.append(t)
-    t = threading.Thread(target=listen,args=(r4,m,output4)).start()
+    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output4)).start()
     threads.append(t)
-    t = threading.Thread(target=listen,args=(r5,m,output5)).start()
+    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output5)).start()
+    threads.append(t)
+    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output6)).start()
     threads.append(t)
 
     t = threading.Thread(target=analyzer).start()
