@@ -15,18 +15,20 @@ def listen(r,m,audio):
         sem.release()
         sem2.acquire()
         try:
+            text = r.recognize_google(audio)
+            print(text)
             f = open('output.txt','a+')
-            f.write(' ' + r.recognize_google(audio))
+            f.write(' ' + text)
             f.close
         except sr.UnknownValueError:
-            pass
+            print("unable to recognize")
         sem2.release()
 
 def analyzer():
     print("Starting analysis")
     while True:
         start_time = time.time()
-        for _ in range(60): time.sleep(0.1)
+        for _ in range(100): time.sleep(0.1)
         sem2.acquire()
         f = open("output.txt", "r+")
         text = f.read()
@@ -84,8 +86,8 @@ def main():
     output6 = ''
     m = sr.Microphone()
 
-    with m as source:
-        r.adjust_for_ambient_noise(source)  # we only need to calibrate once, before we start listening
+    # with m as source:
+    #     r.adjust_for_ambient_noise(source)  # we only need to calibrate once, before we start listening
 
     t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output1)).start()
     threads.append(t)

@@ -13,3 +13,5 @@ name = "pypi"
 
 speechrecognition = "*"
 pyaudio = "*"
+twilio = "*"
+autosub = "*"
