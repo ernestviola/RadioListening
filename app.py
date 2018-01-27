@@ -3,6 +3,7 @@
 # NOTE: this example requires PyAudio because it uses the Microphone class
 
 import keyboard
+import config as cfg
 import sys
 import time
 import speech_recognition as sr
@@ -66,7 +67,7 @@ def main():
     global sem2
     global stopWords
     numberOfThreads = 10
-    stopWords = ["vlad","blad"]
+    stopWords = cfg.configuration['keywords']
     listenTrue = True
     sem = threading.Semaphore(value=1)
     sem2 = threading.Semaphore(value=1)
