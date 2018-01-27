@@ -1,10 +1,14 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 # NOTE: this example requires PyAudio because it uses the Microphone class
 
+import keyboard
+import sys
 import time
 import speech_recognition as sr
 import threading
+import send_sms
+from twilio.rest import Client
 
 def listen(r,m,audio):
     while listenTrue:
@@ -26,7 +30,7 @@ def listen(r,m,audio):
 
 def analyzer():
     print("Starting analysis")
-    while True:
+    while listenTrue:
         start_time = time.time()
         for _ in range(100): time.sleep(0.1)
         sem2.acquire()
@@ -41,7 +45,7 @@ def analyzer():
         text = text.lower()
         for word in stopWords:
             if word in text.lower():
-                print("You found a vampire")
+                print("Keyword Found")
                 for _ in range(240): time.sleep(0.1)
                 sem2.acquire()
                 f = open("output.txt", "r+")
@@ -50,7 +54,7 @@ def analyzer():
                 f.truncate()
                 f.close()
                 sem2.release()
-                print(text)
+                send_sms.send(text)
                 text = ""
                 print("How long it took to form the message from hearing the keyword: ", time.time()-start_time)
 
@@ -61,54 +65,55 @@ def main():
     global sem
     global sem2
     global stopWords
-    stopWords = ["vampire","vampires"]
+    numberOfThreads = 10
+    stopWords = ["vlad","blad"]
     listenTrue = True
     sem = threading.Semaphore(value=1)
     sem2 = threading.Semaphore(value=1)
 
+    m = sr.Microphone()
+
     f = open('output.txt','w+')
     f.truncate()
     f.close()
+    object1 = ''
+    object2=''
+    object3=''
+    object4=''
+    object5=''
+    object6=''
+    object7=''
+    object8=''
+    object9=''
+    object10=''
 
+    objects = [object1,object2,object3,object4,object5,object6,object7,object8,object9,object10]
     threads = []
+    for i in range(numberOfThreads):
+        print(i)
+        thread = threading.Thread(target=listen,args=(sr.Recognizer(),m,objects[i]))
+        threads.append(thread)
+        thread.start()
 
-    r = sr.Recognizer()
-    output1 = ''
-    r2 = sr.Recognizer()
-    output2 = ''
-    r3 = sr.Recognizer()
-    output3 = ''
-    r4 = sr.Recognizer()
-    output4 = ''
-    r5 = sr.Recognizer()
-    output5 = ''
-    r6 = sr.Recognizer()
-    output6 = ''
-    m = sr.Microphone()
+    thread = threading.Thread(target=analyzer)
+    threads.append(thread)
+    thread.start()
 
-    # with m as source:
-    #     r.adjust_for_ambient_noise(source)  # we only need to calibrate once, before we start listening
+    exit = raw_input("type \"exit\" to exit")
 
-    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output1)).start()
-    threads.append(t)
-    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output2)).start()
-    threads.append(t)
-    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output3)).start()
-    threads.append(t)
-    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output4)).start()
-    threads.append(t)
-    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output5)).start()
-    threads.append(t)
-    t = threading.Thread(target=listen,args=(sr.Recognizer(),m,output6)).start()
-    threads.append(t)
-
-    t = threading.Thread(target=analyzer).start()
-
-    if input() is "exit":
+    if exit == "exit":
         listenTrue = False
-        print("Waiting for the last listener")
+        print("Waiting for threads to finish")
+        for thread in threads:
+            print("A thread finished")
+            thread.join()
+        print("We're done here")
         sys.exit()
 
 
 if __name__ == '__main__':
-   main()
+   try:
+      main()
+   except KeyboardInterrupt:
+      # do nothing here
+      pass
