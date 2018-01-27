@@ -2,7 +2,6 @@
 
 # NOTE: this example requires PyAudio because it uses the Microphone class
 
-import keyboard
 import config as cfg
 import sys
 import time
@@ -100,7 +99,7 @@ def main():
     threads.append(thread)
     thread.start()
 
-    exit = raw_input("type \"exit\" to exit")
+    exit = input("type \"exit\" to exit")
 
     if exit == "exit":
         listenTrue = False
