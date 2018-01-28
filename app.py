@@ -65,6 +65,7 @@ def main():
     global sem
     global sem2
     global stopWords
+    global threads
     numberOfThreads = 10
     stopWords = cfg.configuration['keywords']
     listenTrue = True
@@ -99,21 +100,7 @@ def main():
     threads.append(thread)
     thread.start()
 
-    exit = input("type \"exit\" to exit")
-
-    if exit == "exit":
-        listenTrue = False
-        print("Waiting for threads to finish")
-        for thread in threads:
-            print("A thread finished")
-            thread.join()
-        print("We're done here")
-        sys.exit()
-
+    print("crtl + c to exit")
 
 if __name__ == '__main__':
-   try:
-      main()
-   except KeyboardInterrupt:
-      # do nothing here
-      pass
+    main()
