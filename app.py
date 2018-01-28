@@ -3,6 +3,7 @@
 # NOTE: this example requires PyAudio because it uses the Microphone class
 
 import config as cfg
+import datetime
 import sys
 import time
 import speech_recognition as sr
@@ -25,7 +26,7 @@ def listen(r,m,audio):
             f.write(' ' + text)
             f.close
         except sr.UnknownValueError:
-            print("unable to recognize")
+            pass
         sem2.release()
 
 def analyzer():
@@ -40,7 +41,7 @@ def analyzer():
         f.truncate()
         f.close()
         sem2.release()
-        print("Analyzing...")
+        print("Analyzing... ", datetime.datetime.now())
         print(text)
         text = text.lower()
         for word in stopWords:
