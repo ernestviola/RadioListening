@@ -32,7 +32,7 @@ def analyzer():
     print("Starting analysis")
     while listenTrue:
         start_time = time.time()
-        for _ in range(200): time.sleep(0.1) #sleep for at least 10 seconds between each analysis
+        for _ in range(100): time.sleep(0.1) #sleep for at least 10 seconds between each analysis
         sem2.acquire()
         f = open("output.txt", "r+")
         text = f.read()
@@ -40,8 +40,7 @@ def analyzer():
         f.truncate()
         f.close()
         sem2.release()
-        print("Analyzing... ", datetime.datetime.now())
-        print('\n', text)
+        print("Analyzing...", datetime.datetime.now(),'\n',text)
         text = text.lower()
         for word in stopWords:
             if word in text.lower():
