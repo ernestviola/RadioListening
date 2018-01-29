@@ -14,7 +14,6 @@ from twilio.rest import Client
 def listen(r,m,audio):
     while listenTrue:
         sem.acquire()
-        start_time = time.time()
         with m as source:
             audio = r.listen(source, phrase_time_limit = 7)
         sem.release()
@@ -32,7 +31,7 @@ def analyzer():
     print("Starting analysis")
     while listenTrue:
         start_time = time.time()
-        for _ in range(100): time.sleep(0.1) #sleep for at least 10 seconds between each analysis
+        time.sleep(100.0) #sleep for at least 10 seconds between each analysis
         sem2.acquire()
         f = open("output.txt", "r+")
         text = f.read()
@@ -45,7 +44,7 @@ def analyzer():
         for word in stopWords:
             if word in text.lower():
                 print("Keyword Found")
-                for _ in range(240): time.sleep(0.1)
+                time.sleep(25)
                 sem2.acquire()
                 f = open("output.txt", "r+")
                 text += f.read()
@@ -53,7 +52,7 @@ def analyzer():
                 f.truncate()
                 f.close()
                 sem2.release()
-                send_sms.send(text)
+                send_sms.send(text) #Sends recorded message to list of numbers
                 text = ""
                 print("How long it took to form the message from hearing the keyword: ", time.time()-start_time)
 
