@@ -15,7 +15,7 @@ def listen(r,m,audio):
     while listenTrue:
         sem.acquire()
         with m as source:
-            audio = r.listen(source, phrase_time_limit = 30)
+            audio = r.listen(source, phrase_time_limit = 5)
         sem.release()
         sem2.acquire()
         try:
@@ -64,7 +64,7 @@ def main():
     global sem2
     global stopWords
     global threads
-    numberOfThreads = 6
+    numberOfThreads = 5
     stopWords = cfg.configuration['keywords']
     listenTrue = True
     sem = threading.Semaphore(value=1)
