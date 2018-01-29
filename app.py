@@ -15,7 +15,7 @@ def listen(r,m,audio):
     while listenTrue:
         sem.acquire()
         with m as source:
-            audio = r.listen(source, phrase_time_limit = 7)
+            audio = r.listen(source, phrase_time_limit = 30)
         sem.release()
         sem2.acquire()
         try:
@@ -31,7 +31,7 @@ def analyzer():
     print("Starting analysis")
     while listenTrue:
         start_time = time.time()
-        time.sleep(7.0) #sleep for at least 10 seconds between each analysis
+        time.sleep(30.0) #sleep for at least 10 seconds between each analysis
         sem2.acquire()
         f = open("output.txt", "r+")
         text = f.read()
@@ -64,7 +64,7 @@ def main():
     global sem2
     global stopWords
     global threads
-    numberOfThreads = 10
+    numberOfThreads = 6
     stopWords = cfg.configuration['keywords']
     listenTrue = True
     sem = threading.Semaphore(value=1)
