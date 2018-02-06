@@ -35,10 +35,10 @@ def analyzer():
     global numberTextToAnalyze
     print("Starting analysis")
     while listenTrue:
+        now = datetime.datetime.now()
         if now.minute == 1:
             print("TO DO send confirmation text that program is running")
             time.sleep(60)
-        now = datetime.datetime.now()
         if now.minute <= 30 and now.minute >= 5:
             time.sleep(30)
             sem2.acquire()
