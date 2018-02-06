@@ -16,7 +16,7 @@ def listen(r,m,audio):
     global numberTextToAnalyze
     while listenTrue:
         now = datetime.datetime.now()
-        if now.minute <= 25:
+        if now.minute <= 25 and now.minute >=5:
             sem.acquire()
             with m as source:
                 audio = r.listen(source, phrase_time_limit = 5)
