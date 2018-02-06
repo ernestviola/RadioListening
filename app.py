@@ -15,31 +15,24 @@ from collections import deque
 def listen(r,m,audio):
     global numberTextToAnalyze
     while listenTrue:
-        now = datetime.datetime.now()
-        if now.minute <= 25 and now.minute >=5:
-            sem.acquire()
-            with m as source:
-                audio = r.listen(source, phrase_time_limit = 5)
-            sem.release()
-            sem2.acquire()
-            try:
-                text = r.recognize_google(audio)
-                f = open('output.txt','a+')
-                f.write(' ' + text)
-                f.close
-            except sr.UnknownValueError:
-                pass
-            sem2.release()
+        sem.acquire()
+        with m as source:
+            audio = r.listen(source, phrase_time_limit = 5)
+        sem.release()
+        sem2.acquire()
+        try:
+            text = r.recognize_google(audio)
+            f = open('output.txt','a+')
+            f.write(' ' + text)
+            f.close
+        except sr.UnknownValueError:
+            pass
+        sem2.release()
 
 def analyzer():
     global numberTextToAnalyze
     print("Starting analysis")
     while listenTrue:
-        now = datetime.datetime.now()
-        if now.minute == 1:
-            send_sms.sendToMaster()
-            time.sleep(60)
-        if now.minute <= 30 and now.minute >= 5:
             time.sleep(30)
             sem2.acquire()
             f = open("output.txt", "r+")
@@ -50,21 +43,28 @@ def analyzer():
             sem2.release()
             print('\n',"Analyzing...", datetime.datetime.now(),'\n',text)
             text = text.lower()
-            for number in numbers:
-                for word in cfg.numbersKeywords[number]:
-                    if word in text:
-                        print("Keyword Found")
-                        time.sleep(25.0)
-                        sem2.acquire()
-                        f = open("output.txt", "r+")
-                        text += f.read()
-                        f.seek(0)
-                        f.truncate()
-                        f.close()
-                        sem2.release()
-                        send_sms.send(text,number,word) #Sends recorded message to list of numbers
-                        text = ""
-                        print("How long it took to form the message from hearing the keyword: ", time.time()-start_time)
+            last = ""
+            if text != "":
+                last = text
+            now = datetime.datetime.now()
+            if now.minute == 1:
+                send_sms.sendToMaster(last)
+                time.sleep(60)
+            if now.minute <= 30 and now.minute >= 5:
+                for number in numbers:
+                    for word in cfg.numbersKeywords[number]:
+                        if word in text:
+                            print("Keyword Found")
+                            time.sleep(25.0)
+                            sem2.acquire()
+                            f = open("output.txt", "r+")
+                            text += f.read()
+                            f.seek(0)
+                            f.truncate()
+                            f.close()
+                            sem2.release()
+                            send_sms.send(text,number,word) #Sends recorded message to list of numbers
+                            text = ""
 
 def main():
 

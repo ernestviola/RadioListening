@@ -34,10 +34,11 @@ def test():
         from_=twilioNumber,
         body=context)
 
-def sendToMaster():
+def sendToMaster(text):
+    client.api.account.messages.create(
     to=master,
     from_=twilioNumber,
-    body="Program is running")
+    body="Program is running %s" % text)
 
 
 if __name__ == '__main__':
