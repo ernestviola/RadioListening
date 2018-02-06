@@ -23,8 +23,10 @@ def listen(r,m,audio):
             sem.release()
             sem2.acquire()
             try:
-                text.append(r.recognize_google(audio))
-                numberTextToAnalyze += 1
+                text = r.recognize_google(audio)
+                f = open('output.txt','a+')
+                f.write(' ' + text)
+                f.close
             except sr.UnknownValueError:
                 pass
             sem2.release()
@@ -33,28 +35,40 @@ def analyzer():
     global numberTextToAnalyze
     print("Starting analysis")
     while listenTrue:
+        if now.minute == 1:
+            print("TO DO send confirmation text that program is running")
+            time.sleep(60)
         now = datetime.datetime.now()
-        if now.minute <= 30:
-            if (numberTextToAnalyze == numberOfThreads):
-                numberTextToAnalyze -=5
-                print('\n',"Analyzing...", datetime.datetime.now(),'\n')
-                for x in range(0,numberOfThreads):
-                    phrase = text.popleft().lower()
-                    print(phrase,end=" ")
-                    for number in numbers:
-                        for word in cfg.numbersKeywords[number]:
-                            if word in phrase:
-                                while True:
-                                    if (numberTextToAnalyze == numberOfThreads):
-                                        numberTextToAnalyze -=5
-                                        for x in range(0,numberOfThreads):
-                                            phrase += " " + text.popleft().lower()
-                                        break
-                                print('\n',phrase)
-                                send_sms.send(phrase,number)
+        if now.minute <= 30 and now.minute >= 5:
+            time.sleep(30)
+            sem2.acquire()
+            f = open("output.txt", "r+")
+            text = f.read()
+            f.seek(0)
+            f.truncate()
+            f.close()
+            sem2.release()
+            print('\n',"Analyzing...", datetime.datetime.now(),'\n')
+            text = text.lower()
+            for number in numbers:
+                for word in cfg.numbersKeywords[number]:
+                    if word in text:
+                        print("Keyword Found")
+                        time.sleep(25.0)
+                        sem2.acquire()
+                        f = open("output.txt", "r+")
+                        text += f.read()
+                        f.seek(0)
+                        f.truncate()
+                        f.close()
+                        sem2.release()
+                        send_sms.send(text) #Sends recorded message to list of numbers
+                        text = ""
+                        print("How long it took to form the message from hearing the keyword: ", time.time()-start_time)
 
 def main():
 
+    global f
     global numbers
     global listenTrue
     global sem
@@ -72,6 +86,10 @@ def main():
     numbers = list(cfg.numbersKeywords.keys()) #get all key values
 
     m = sr.Microphone()
+
+    f = open('output.txt','w+')
+    f.truncate()
+    f.close()
 
     object1 = ''
     object2=''
