@@ -37,7 +37,7 @@ def analyzer():
     while listenTrue:
         now = datetime.datetime.now()
         if now.minute == 1:
-            print("TO DO send confirmation text that program is running")
+            send_sms.sendToMaster()
             time.sleep(60)
         if now.minute <= 30 and now.minute >= 5:
             time.sleep(30)
@@ -48,7 +48,7 @@ def analyzer():
             f.truncate()
             f.close()
             sem2.release()
-            print('\n',"Analyzing...", datetime.datetime.now(),'\n')
+            print('\n',"Analyzing...", datetime.datetime.now(),'\n',text)
             text = text.lower()
             for number in numbers:
                 for word in cfg.numbersKeywords[number]:
@@ -62,7 +62,7 @@ def analyzer():
                         f.truncate()
                         f.close()
                         sem2.release()
-                        send_sms.send(text) #Sends recorded message to list of numbers
+                        send_sms.send(text,number,word) #Sends recorded message to list of numbers
                         text = ""
                         print("How long it took to form the message from hearing the keyword: ", time.time()-start_time)
 

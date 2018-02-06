@@ -6,6 +6,7 @@ global numbers, account_sid, auth_token
 
 twilioNumber = cfg.configuration['twilioNumber']
 station = cfg.configuration['stationNumber']
+master = cfg.master
 
 # Find these values at https://twilio.com/user/account
 account_sid = cfg.configuration['account_sid']
@@ -13,14 +14,14 @@ auth_token = cfg.configuration['twilio_auth_Token']
 
 client = Client(account_sid, auth_token)
 
-def send(text,number):
-    context = "Context: %s Call this number to win %s" % (text, station)
+def send(text,number,keyword):
+    context = "Keyword: %s Context: %s Call this number to win %s" % (keyword.upper(),text, station,)
     client.api.account.messages.create(
     to=number,
     from_=twilioNumber,
     body=context)
     client.api.account.messages.create(
-    to="+16197182387",
+    to=master,
     from_=twilioNumber,
     body=context)
 
@@ -32,6 +33,11 @@ def test():
         to=number,
         from_=twilioNumber,
         body=context)
+
+def sendToMaster():
+    to=master,
+    from_=twilioNumber,
+    body="Program is running")
 
 
 if __name__ == '__main__':
