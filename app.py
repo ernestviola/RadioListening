@@ -15,39 +15,43 @@ from collections import deque
 def listen(r,m,audio):
     global numberTextToAnalyze
     while listenTrue:
-        sem.acquire()
-        with m as source:
-            audio = r.listen(source, phrase_time_limit = 5)
-        sem.release()
-        sem2.acquire()
-        try:
-            text.append(r.recognize_google(audio))
-            numberTextToAnalyze += 1
-        except sr.UnknownValueError:
-            pass
-        sem2.release()
+        now = datetime.datetime.now()
+        if now.minute <= 25:
+            sem.acquire()
+            with m as source:
+                audio = r.listen(source, phrase_time_limit = 5)
+            sem.release()
+            sem2.acquire()
+            try:
+                text.append(r.recognize_google(audio))
+                numberTextToAnalyze += 1
+            except sr.UnknownValueError:
+                pass
+            sem2.release()
 
 def analyzer():
     global numberTextToAnalyze
     print("Starting analysis")
     while listenTrue:
-        if (numberTextToAnalyze == numberOfThreads):
-            numberTextToAnalyze -=5
-            print('\n',"Analyzing...", datetime.datetime.now(),'\n')
-            for x in range(0,numberOfThreads):
-                phrase = text.popleft().lower()
-                print(phrase,end=" ")
-                for number in numbers:
-                    for word in cfg.numbersKeywords[number]:
-                        if word in phrase:
-                            while True:
-                                if (numberTextToAnalyze == numberOfThreads):
-                                    numberTextToAnalyze -=5
-                                    for x in range(0,numberOfThreads):
-                                        phrase += " " + text.popleft().lower()
-                                    break
-                            print('\n',phrase)
-                            send_sms.send(phrase,number)
+        now = datetime.datetime.now()
+        if now.minute <= 30:
+            if (numberTextToAnalyze == numberOfThreads):
+                numberTextToAnalyze -=5
+                print('\n',"Analyzing...", datetime.datetime.now(),'\n')
+                for x in range(0,numberOfThreads):
+                    phrase = text.popleft().lower()
+                    print(phrase,end=" ")
+                    for number in numbers:
+                        for word in cfg.numbersKeywords[number]:
+                            if word in phrase:
+                                while True:
+                                    if (numberTextToAnalyze == numberOfThreads):
+                                        numberTextToAnalyze -=5
+                                        for x in range(0,numberOfThreads):
+                                            phrase += " " + text.popleft().lower()
+                                        break
+                                print('\n',phrase)
+                                send_sms.send(phrase,number)
 
 def main():
 
